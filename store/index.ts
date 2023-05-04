@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 
 export const useLetterStore = defineStore('counter', () => {
     const nextLetter = ref('X')
+    const myLetter: Ref<'X' | 'O'> = ref('X');
     const gameOver = ref(false);
     const winner = ref('');
     let filledPositions = 0;
@@ -59,5 +60,9 @@ export const useLetterStore = defineStore('counter', () => {
 
     };
 
-    return { currentLetter, updateBoard, gameOver, winner }
+    const setMyLetter = (player: string) => {
+       myLetter.value = player === 'a' ? 'X' : 'O';
+    }
+
+    return { currentLetter, updateBoard, gameOver, winner, setMyLetter, myLetter }
 })

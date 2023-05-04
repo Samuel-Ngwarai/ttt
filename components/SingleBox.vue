@@ -16,6 +16,12 @@ const xOrO = ref("");
 let touched = false;
 const letterStore = useLetterStore();
 
+const doSomething = () => {
+    console.log('Im batman')
+    console.log('x ', props.x);
+    console.log('y ', props.y);
+}
+
 const chooseBox = () => {
   if (touched) return;
   touched = true;
@@ -23,4 +29,8 @@ const chooseBox = () => {
   xOrO.value = letterStore.currentLetter();
   letterStore.updateBoard(props.x, props.y, xOrO.value);
 };
+
+defineExpose({
+    doSomething
+})
 </script>
