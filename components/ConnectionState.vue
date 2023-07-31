@@ -1,26 +1,14 @@
 <template>
-    <p>Socketio Connection State: {{ connected }}</p>
+  <div class="h-10">
+    <p>{{ connectionState }}</p>
+  </div>
+</template>
 
-    <p>Connection state: {{ currentState }}</p>
-  </template>
-  
-  <script setup lang="ts">
-  import { state, socket } from "@/socket";
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
 
-  const connected = computed(() => state.connected);
-  const currentState = ref('');
+import { useLetterStore } from "../store";
 
-  // socket.on('waiting-for-player-b', (args) => {
-  //   console.log('waiting for player b');
-    
-  //   currentState.value = args
-  // });
+const { connectionState } = storeToRefs(useLetterStore());
 
-  socket.on('player-a', (args) => {
-    currentState.value = `Player a with: ${args}`;
-  })
-
-  socket.on('player-b', (args) => {
-    currentState.value = `Player b with: ${args}`;
-  })
-  </script>
+</script>

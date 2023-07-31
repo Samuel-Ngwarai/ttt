@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-blue-200 grid place-items-center" @click="chooseBox">
-    {{ xOrO }}
+  <div class="bg-blue-100 grid place-items-center text-6xl" @click="chooseBox">
+    {{ letterStore.board[props.x][props.y] === '-' ? '' : letterStore.board[props.x][props.y] }}
   </div>
 </template>
 
@@ -12,25 +12,16 @@ const props = defineProps<{
   y: number;
 }>();
 
-const xOrO = ref("");
-let touched = false;
 const letterStore = useLetterStore();
-
-const doSomething = () => {
-    console.log('Im batman')
-    console.log('x ', props.x);
-    console.log('y ', props.y);
-}
+const active = ref(false);
 
 const chooseBox = () => {
-  if (touched) return;
-  touched = true;
-  console.log("clicking ", props.x, ":", props.y);
-  xOrO.value = letterStore.currentLetter();
-  letterStore.updateBoard(props.x, props.y, xOrO.value);
+  if (letterStore.currentState === 'waiting-now') {
+    return alert('Waiting for other player to play first');
+  }
+  letterStore.updateBoard(props.x, props.y);
+  active.value = true;
+  socketIoClient.emit("play", { x: props.x, y: props.y, session: letterStore.sessionId, icon: letterStore.myLetter });
 };
 
-defineExpose({
-    doSomething
-})
 </script>
