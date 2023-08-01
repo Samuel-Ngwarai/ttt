@@ -10,5 +10,4 @@ import { storeToRefs } from "pinia";
 import { useLetterStore } from "../store";
 
 const { connectionState } = storeToRefs(useLetterStore());
-
 </script>
