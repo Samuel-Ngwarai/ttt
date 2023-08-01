@@ -29,6 +29,7 @@ import { storeToRefs } from "pinia";
 import { useLetterStore } from "../store";
 
 const { connectionState, sessionId } = storeToRefs(useLetterStore());
+const socketIoClient = getSocketIoClient();
 
 const connect = () => {
   socketIoClient.connect();
@@ -36,11 +37,11 @@ const connect = () => {
 
 const disconnect = () => {
   if (sessionId.value) {
-    socketIoClient.emit('abort-connection', (sessionId.value));
-    sessionId.value = '';
+    socketIoClient.emit("abort-connection", sessionId.value);
+    sessionId.value = "";
   }
 
   socketIoClient.disconnect();
-  connectionState.value = 'Disconnected';
+  connectionState.value = "Disconnected";
 };
 </script>
