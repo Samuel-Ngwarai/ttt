@@ -28,11 +28,15 @@ import { storeToRefs } from "pinia";
 
 import { useLetterStore } from "../store";
 
-const { connectionState, sessionId } = storeToRefs(useLetterStore());
+const letterStore = useLetterStore();
+const { connectionState, sessionId, currentState } = storeToRefs(letterStore);
 const socketIoClient = getSocketIoClient();
 
 const connect = () => {
   socketIoClient.connect();
+  currentState.value = 'initial-state';
+  letterStore.resetBoard();
+  sessionId.value = '';
 };
 
 const disconnect = () => {

@@ -23,6 +23,8 @@ const socketIoClient = getSocketIoClient();
 const chooseBox = () => {
   if (letterStore.currentState === "waiting-now") {
     return alert("Waiting for other player to play first");
+  } else if (letterStore.currentState !== "playing-now") {
+    return alert("Patience now. Wait for the game to start") 
   }
   letterStore.updateBoard(props.x, props.y);
   active.value = true;
