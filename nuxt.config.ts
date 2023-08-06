@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     public: {
       sentryTracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || 1),
       sentryDsn: process.env.SENTRY_DSN,
+      giphyRequestLimit: Number(process.env.GIPHY_REQUEST_LIMIT || 25),
       nodeEnv: process.env.NODE_ENV || "development",
       tttServerUrl: process.env.TTT_SERVER_URL || "http://localhost:3001",
     },
