@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     giphyAPIKey: process.env.GIPHY_API_KEY,
     giphyRequestLimit: Number(process.env.GIPHY_REQUEST_LIMIT || 25),
     public: {
+      giphyRequestLimit: Number(process.env.GIPHY_REQUEST_LIMIT || 25),
       nodeEnv: process.env.NODE_ENV || "development",
       tttServerUrl: process.env.TTT_SERVER_URL || "http://localhost:3001",
     },

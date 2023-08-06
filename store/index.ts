@@ -3,9 +3,8 @@ import { defineStore } from "pinia";
 export const useLetterStore = defineStore("counter", () => {
   const myLetter: Ref<"X" | "O"> = ref("X");
   const alternativeLetter: Ref<"X" | "O"> = ref("O");
-  const gameOver = ref(false);
   const sessionId = ref("");
-  const currentState = ref("");
+  const currentState = ref("initial-state");
   const connectionState = ref("Disconnected");
 
   const socketsState = reactive({
@@ -14,11 +13,19 @@ export const useLetterStore = defineStore("counter", () => {
     barEvents: [],
   });
 
-  const board = reactive([
+  let board = reactive([
     ["-", "-", "-"],
     ["-", "-", "-"],
     ["-", "-", "-"],
   ]);
+
+  const resetBoard = () => {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        board[i][j] = '-';
+      }
+    }
+  }
 
   const updateBoard = (x: number, y: number, letter?: "X" | "O") => {
     if (board[x][y] !== "-") {
@@ -35,7 +42,6 @@ export const useLetterStore = defineStore("counter", () => {
 
   return {
     updateBoard,
-    gameOver,
     setMyLetter,
     myLetter,
     currentState,
@@ -44,5 +50,6 @@ export const useLetterStore = defineStore("counter", () => {
     board,
     connectionState,
     socketsState,
+    resetBoard
   };
 });
