@@ -1,11 +1,26 @@
 import { defineStore } from "pinia";
 
+export enum ConnectionStateEnum {
+  Connected = 'Connected',
+  Disconnected = 'Disconnected',
+  Waiting = 'Waiting'
+}
+
+export enum CurrentGameStateEnum {
+  InitialState = 'InitialState',
+  Waiting = 'Waiting',
+  Playing = 'Playing',
+  EndDraw = 'EndDraw',
+  EndWin = 'EndWin',
+  EndLose = 'EndLose'
+}
+
 export const useLetterStore = defineStore("counter", () => {
   const myLetter: Ref<"X" | "O"> = ref("X");
   const alternativeLetter: Ref<"X" | "O"> = ref("O");
   const sessionId = ref("");
-  const currentState = ref("initial-state");
-  const connectionState = ref("Disconnected");
+  const currentState = ref<CurrentGameStateEnum>(CurrentGameStateEnum.InitialState);
+  const connectionState = ref<ConnectionStateEnum>(ConnectionStateEnum.Disconnected);
 
   const socketsState = reactive({
     connected: false,

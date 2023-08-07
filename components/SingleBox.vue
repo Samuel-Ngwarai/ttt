@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { useLetterStore } from "../store";
+import { CurrentGameStateEnum, useLetterStore } from "../store";
 
 const props = defineProps<{
   x: number;
@@ -21,9 +21,9 @@ const active = ref(false);
 const socketIoClient = getSocketIoClient();
 
 const chooseBox = () => {
-  if (letterStore.currentState === "waiting-now") {
+  if (letterStore.currentState === CurrentGameStateEnum.Waiting) {
     return alert("Waiting for other player to play first");
-  } else if (letterStore.currentState !== "playing-now") {
+  } else if (letterStore.currentState !== CurrentGameStateEnum.Playing) {
     return alert("Patience now. Wait for the game to start") 
   }
   letterStore.updateBoard(props.x, props.y);

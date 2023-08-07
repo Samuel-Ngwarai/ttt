@@ -5,22 +5,26 @@
     <div class="md:col-span-1">
       <ConnectionState />
       <ConnectionManager />
-      <button v-if="gameOver" @click="toggleBoard">View Board/Gif</button>
+      <button
+        v-if="displayToggleBoardButton"
+        @click="toggleBoard"
+        class="relative inline-flex w-[250px] items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-2xl font-medium text-gray-900 rounded-full group bg-gradient-to-br from-blue-400 to-green-600 group-hover:from-blue-400 group-hover:to-green-600 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800"
+      >
+        <span
+          class="relative px-10 w-[250px] py-5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-full group-hover:bg-opacity-0"
+        >
+        Toggle Board
+        </span>
+      </button>
     </div>
     <Transition>
       <div
         v-if="showBoard"
         class="lg:h-[600px] lg:w-[600px] h-[300px] w-[300px] bg-gray-100 md:col-span-3 grid grid-cols-3 grid-rows-3 gap-2 absolute"
       >
-        <SingleBox :x="0" :y="0" />
-        <SingleBox :x="1" :y="0" />
-        <SingleBox :x="2" :y="0" />
-        <SingleBox :x="0" :y="1" />
-        <SingleBox :x="1" :y="1" />
-        <SingleBox :x="2" :y="1" />
-        <SingleBox :x="0" :y="2" />
-        <SingleBox :x="1" :y="2" />
-        <SingleBox :x="2" :y="2" />
+          <SingleBox v-for="y in 3" :x="0" :y="y - 1" />
+          <SingleBox v-for="y in 3" :x="1" :y="y - 1" />
+          <SingleBox v-for="y in 3" :x="2" :y="y - 1" />
       </div>
       <div v-else class="md:col-span-3 absolute">
         <img :src="gif" class="max-w-5xl max-h-5xl" alt="woahh" />
@@ -32,7 +36,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { useLetterStore } from "./store";
+import { useLetterStore, ConnectionStateEnum, CurrentGameStateEnum } from "./store";
 
 const config = useRuntimeConfig();
 
@@ -42,12 +46,29 @@ const { currentState, connectionState, sessionId, socketsState } =
 
 const gif = ref("");
 const endState = ref("");
-const gameOver = ref(false);
 const showBoard = ref(true);
+
+const displayToggleBoardButton = ref(false);
+
+watch(currentState, (newValue, _) => {
+  switch (newValue) {
+    case CurrentGameStateEnum.EndDraw:
+    case CurrentGameStateEnum.EndLose:
+    case CurrentGameStateEnum.EndWin:
+      displayToggleBoardButton.value = true;
+      showBoard.value = false;
+      break;
+
+    default:
+      displayToggleBoardButton.value = false;
+      showBoard.value = true;
+      break;
+  }
+});
 
 const toggleBoard = () => {
   showBoard.value = !showBoard.value;
-}
+};
 
 const getEndGif = async (prompt: string) => {
   const data = await $fetch(`/giphy?prompt=${prompt}&rating=g`);
@@ -63,52 +84,47 @@ const initializeSocketFunctionality = () => {
 
   socketIoClient.on("connect", () => {
     socketsState.value.connected = true;
-    gameOver.value = false;
-    showBoard.value = true;
+
     socketIoClient.emit("establish-connection");
   });
 
   socketIoClient.on("disconnect", () => {
     socketsState.value.connected = false;
-    connectionState.value = "Disconnected";
+    connectionState.value = ConnectionStateEnum.Disconnected;
   });
 
   socketIoClient.on("player-b", ({ sessionId }) => {
     letterStore.setMyLetter("O");
     letterStore.sessionId = sessionId;
-    connectionState.value = "Connected";
-    currentState.value = "waiting-now";
+    connectionState.value = ConnectionStateEnum.Connected;
+    currentState.value = CurrentGameStateEnum.Waiting;
   });
 
   socketIoClient.on("player-a", ({ sessionId }) => {
     letterStore.setMyLetter("X");
     letterStore.sessionId = sessionId;
-    connectionState.value = "Connected";
-    currentState.value = "playing-now";
+    connectionState.value = ConnectionStateEnum.Connected;
+    currentState.value = CurrentGameStateEnum.Playing;
   });
 
   socketIoClient.on("waiting-for-other-player", () => {
-    currentState.value = "waiting-now";
+    currentState.value = CurrentGameStateEnum.Waiting;
   });
 
   socketIoClient.on("current-turn-to-play", ({ x, y }) => {
     letterStore.updateBoard(x, y, letterStore.alternativeLetter);
-    currentState.value = "playing-now";
+    currentState.value = CurrentGameStateEnum.Playing;
   });
 
   socketIoClient.on("end-draw", async () => {
-    currentState.value = "end-draw";
-    gameOver.value = true;
-    showBoard.value = false;
+    currentState.value = CurrentGameStateEnum.EndDraw;
     endState.value = "Draw!";
     await getEndGif("Let's play again!");
     socketIoClient.disconnect();
   });
 
   socketIoClient.on("end-win", async () => {
-    currentState.value = "end-win";
-    gameOver.value = true;
-    showBoard.value = false;
+    currentState.value = CurrentGameStateEnum.EndWin;
     endState.value = "I won!";
     await getEndGif("I won!");
     socketIoClient.disconnect();
@@ -116,16 +132,15 @@ const initializeSocketFunctionality = () => {
 
   socketIoClient.on("end-loss", async ({ x, y }) => {
     letterStore.updateBoard(x, y, letterStore.alternativeLetter);
-    currentState.value = "end-loss";
-    gameOver.value = true;
-    showBoard.value = false;
+    currentState.value = CurrentGameStateEnum.EndLose;
     endState.value = "I lost...";
     await getEndGif("I lost");
     socketIoClient.disconnect();
   });
 
   socketIoClient.on("waiting-for-player-b", (args) => {
-    connectionState.value = "Waiting";
+    connectionState.value = ConnectionStateEnum.Waiting;
+    currentState.value = CurrentGameStateEnum.Waiting;
   });
 
   socketIoClient.on("other-player-aborted", () => {
