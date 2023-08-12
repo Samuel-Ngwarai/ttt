@@ -1,5 +1,5 @@
 <template>
-  <div class="h-10">
+  <div class="h-10 flex justify-center">
     <div class="flex">
       <p>{{ connectionState }}</p>
       <div class="rounded-full w-5 h-5 mx-4"  :class="[symbolColor]"></div>
