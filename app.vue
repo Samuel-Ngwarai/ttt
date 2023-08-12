@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid h-screen w-screen bg-slate-100 place-items-center md:grid-cols-4"
+    class="grid p-5 h-screen w-screen bg-slate-100 place-items-center grid-cols-1 grid-rows-small lg:grid-rows-1 lg:grid-cols-large"
   >
     <div class="md:col-span-1">
       <ConnectionState />
@@ -13,30 +13,38 @@
         <span
           class="relative px-10 w-[250px] py-5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-full group-hover:bg-opacity-0"
         >
-        Toggle Board
+          Toggle Board
         </span>
       </button>
     </div>
-    <Transition>
+    <div>
       <div
         v-if="showBoard"
-        class="lg:h-[600px] lg:w-[600px] h-[300px] w-[300px] bg-gray-100 md:col-span-3 grid grid-cols-3 grid-rows-3 gap-2 absolute"
+        class="md:h-[600px] md:w-[600px] h-[300px] w-[300px] bg-gray-100 md:col-span-3 grid grid-cols-3 grid-rows-3 gap-2"
       >
-          <SingleBox v-for="y in 3" :x="0" :y="y - 1" />
-          <SingleBox v-for="y in 3" :x="1" :y="y - 1" />
-          <SingleBox v-for="y in 3" :x="2" :y="y - 1" />
+        <SingleBox v-for="y in 3" :x="0" :y="y - 1" />
+        <SingleBox v-for="y in 3" :x="1" :y="y - 1" />
+        <SingleBox v-for="y in 3" :x="2" :y="y - 1" />
       </div>
-      <div v-else class="md:col-span-3 absolute">
-        <img :src="gif" class="max-w-5xl max-h-5xl" alt="woahh" />
+      <div v-else class="md:col-span-3">
+        <img
+          :src="gif"
+          class="max-w-xs max-h-xs lg:max-w-5xl lg:max-h-5xl"
+          alt="woahh"
+        />
         {{ endState }}
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { useLetterStore, ConnectionStateEnum, CurrentGameStateEnum } from "./store";
+import {
+  useLetterStore,
+  ConnectionStateEnum,
+  CurrentGameStateEnum,
+} from "./store";
 
 const config = useRuntimeConfig();
 
