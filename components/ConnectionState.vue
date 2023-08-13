@@ -1,35 +1,47 @@
 <template>
-  <div class="h-10 flex justify-center">
+  <div>
     <div class="flex">
-      <p>{{ connectionState }}</p>
-      <div class="rounded-full w-5 h-5 mx-4"  :class="[symbolColor]"></div>
-      <p>{{ connectionState === ConnectionStateEnum.Connected ? myLetter : '' }}</p>
+      <div class="rounded-full w-6 h-4 mr-4 my-1" :class="[symbolColor]"></div>
     </div>
-    
+    <p>{{ showMyLetter ? `My Letter: ${myLetter}` : "" }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 
-import { useLetterStore, ConnectionStateEnum } from "../store";
+import {
+  useLetterStore,
+  ConnectionStateEnum,
+  CurrentGameStateEnum,
+} from "../store";
 
-const { connectionState, myLetter } = storeToRefs(useLetterStore());
-const symbolColor = ref('bg-red-600');
+const { connectionState, myLetter, currentState } = storeToRefs(
+  useLetterStore()
+);
+const symbolColor = ref("bg-red-600");
+
+const showMyLetter = computed(() => {
+  return (
+    connectionState.value === ConnectionStateEnum.Connected ||
+    currentState.value === CurrentGameStateEnum.EndDraw ||
+    currentState.value === CurrentGameStateEnum.EndLose ||
+    currentState.value === CurrentGameStateEnum.EndWin
+  );
+});
 
 watch(connectionState, (newState, _) => {
   switch (newState) {
     case ConnectionStateEnum.Connected:
-      symbolColor.value = 'bg-green-600';
+      symbolColor.value = "bg-green-600";
       break;
     case ConnectionStateEnum.Waiting:
-      symbolColor.value = 'bg-orange-400'
+      symbolColor.value = "bg-orange-400";
       break;
-  
+
     case ConnectionStateEnum.Disconnected:
-      symbolColor.value = 'bg-red-600'
+      symbolColor.value = "bg-red-600";
       break;
   }
 });
-
 </script>

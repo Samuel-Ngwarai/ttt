@@ -3,6 +3,16 @@
     class="grid p-5 h-screen w-screen bg-slate-100 place-items-center grid-cols-1 grid-rows-small lg:grid-rows-1 lg:grid-cols-large"
   >
     <div class="md:col-span-1">
+      <div class="flex">
+        <InfoTooltip>
+          <template #main>
+            <h1>Win streak: {{ windrawStreak || 0 }}</h1>
+          </template>
+          <template #tooltip>
+            <h1>Draws with 'O' count as a win</h1>
+          </template>
+        </InfoTooltip>
+      </div>
       <ConnectionState />
       <ConnectionManager />
       <button
@@ -26,11 +36,11 @@
         <SingleBox v-for="y in 3" :x="1" :y="y - 1" />
         <SingleBox v-for="y in 3" :x="2" :y="y - 1" />
       </div>
-      <div v-else class="md:col-span-3">
+      <div v-else class="md:col-span-3 text-center text-xl">
         <img
           :src="gif"
           class="max-w-xs max-h-xs lg:max-w-5xl lg:max-h-5xl"
-          alt="woahh"
+          :alt="endState"
         />
         {{ endState }}
       </div>
@@ -49,12 +59,19 @@ import {
 const config = useRuntimeConfig();
 
 const letterStore = useLetterStore();
-const { currentState, connectionState, sessionId, socketsState } =
+const { currentState, connectionState, sessionId, socketsState, myLetter } =
   storeToRefs(letterStore);
 
 const gif = ref("");
 const endState = ref("");
 const showBoard = ref(true);
+const windrawStreak = ref<number>(0);
+
+if (process.client) {
+  windrawStreak.value = Number(
+    window.localStorage.getItem("ttt-windrawStreak") || 0
+  );
+}
 
 const displayToggleBoardButton = ref(false);
 
@@ -86,6 +103,22 @@ const getEndGif = async (prompt: string) => {
     ].images.original.url!;
 };
 
+const updateWindrawStreak = () => {
+  if (
+    currentState.value === CurrentGameStateEnum.EndWin ||
+    (myLetter.value === "O" &&
+      currentState.value === CurrentGameStateEnum.EndDraw)
+  ) {
+    windrawStreak.value += 1;
+  } else {
+    windrawStreak.value = 0;
+  }
+
+  if (process.client) {
+    window.localStorage.setItem("ttt-windrawStreak", String(windrawStreak.value));
+  }
+};
+
 const initializeSocketFunctionality = () => {
   initializeSocketIoClient();
   const socketIoClient = getSocketIoClient();
@@ -101,14 +134,14 @@ const initializeSocketFunctionality = () => {
     connectionState.value = ConnectionStateEnum.Disconnected;
   });
 
-  socketIoClient.on("player-b", ({ sessionId }) => {
+  socketIoClient.on("player-o", ({ sessionId }) => {
     letterStore.setMyLetter("O");
     letterStore.sessionId = sessionId;
     connectionState.value = ConnectionStateEnum.Connected;
     currentState.value = CurrentGameStateEnum.Waiting;
   });
 
-  socketIoClient.on("player-a", ({ sessionId }) => {
+  socketIoClient.on("player-x", ({ sessionId }) => {
     letterStore.setMyLetter("X");
     letterStore.sessionId = sessionId;
     connectionState.value = ConnectionStateEnum.Connected;
@@ -128,6 +161,7 @@ const initializeSocketFunctionality = () => {
     currentState.value = CurrentGameStateEnum.EndDraw;
     endState.value = "Draw!";
     await getEndGif("Let's play again!");
+    updateWindrawStreak();
     socketIoClient.disconnect();
   });
 
@@ -135,6 +169,7 @@ const initializeSocketFunctionality = () => {
     currentState.value = CurrentGameStateEnum.EndWin;
     endState.value = "I won!";
     await getEndGif("I won!");
+    updateWindrawStreak();
     socketIoClient.disconnect();
   });
 
@@ -143,19 +178,28 @@ const initializeSocketFunctionality = () => {
     currentState.value = CurrentGameStateEnum.EndLose;
     endState.value = "I lost...";
     await getEndGif("I lost");
+    updateWindrawStreak();
     socketIoClient.disconnect();
   });
 
-  socketIoClient.on("waiting-for-player-b", (args) => {
+  socketIoClient.on("waiting-for-player-b-connection", (args) => {
     connectionState.value = ConnectionStateEnum.Waiting;
-    currentState.value = CurrentGameStateEnum.Waiting;
   });
 
   socketIoClient.on("other-player-aborted", () => {
+    alert("Other player aborted!");
+    connectionState.value = ConnectionStateEnum.Disconnected;
+    currentState.value = CurrentGameStateEnum.InitialState;
     if (sessionId.value) {
       sessionId.value = "";
     }
     socketIoClient.disconnect();
+  });
+
+  socketIoClient.on("no-other-players-available", () => {
+    alert("No other players currently available. Please try again later");
+    connectionState.value = ConnectionStateEnum.Disconnected;
+    currentState.value = CurrentGameStateEnum.InitialState;
   });
 };
 
