@@ -2,6 +2,20 @@
 export default defineNuxtConfig({
   modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"],
   plugins: [{ src: "~/plugins/vercel.ts", mode: "client" }],
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: 'en'
+      },
+      title: 'Tic Tac Toe',
+      meta: [
+        { name: 'description', content: 'Play Tic Tac Toe online' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }
+      ],
+    }
+  },
   runtimeConfig: {
     giphyAPIKey: process.env.GIPHY_API_KEY,
     giphyRequestLimit: Number(process.env.GIPHY_REQUEST_LIMIT || 25),
