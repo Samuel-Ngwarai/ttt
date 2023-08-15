@@ -13,7 +13,7 @@
           </template>
         </InfoTooltip>
       </div>
-      <ConnectionState />
+      <ConnectionState class="mb-3" />
       <ConnectionManager />
       <button
         v-if="displayToggleBoardButton"
