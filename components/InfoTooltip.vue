@@ -8,9 +8,9 @@
     <span
       class="pointer-events-none absolute -top-7 left-0 w-max opacity-0 transition-opacity group-hover:opacity-100"
     >
-      <tooltip>
+      <div>
         <slot name="tooltip"></slot>
-      </tooltip>
+      </div>
     </span>
   </div>
 </template>
